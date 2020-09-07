@@ -7,16 +7,17 @@ function generateRandomData(size){
   return Array(size).fill().map(() => Math.round(Math.random() * 40))
 }
 
-let eeg = generateRandomData(6000);
-let o2Saturation = generateRandomData(6000);
-let data3 = generateRandomData(6000);
-
-
-
 function App() {
   let [start , setStart] = useState(0);
   let [zoomLevel , setZoomLevel] = useState(1);
   let [mixed , setMixed] = useState(0);
+  let [data , setData] = useState(null);
+
+  fetch("http://localhost:3001/data").then(function(response){
+    response.json().then(function(data){
+      setData(data)
+    })
+  })
 
   let handleKeyPress = (event) => {
     if(event.key === '+' && zoomLevel < 6){
@@ -31,13 +32,16 @@ function App() {
   }
 
   let charts ;
-  if(mixed === 0){
+  if(data == null){
+    charts = <div>Loading ...</div>
+  }
+  else if(mixed === 0){
     charts = <div id="charts" key={start + zoomLevel} >
-    <LineChart start={start} data={eeg.slice(start , start + zoomLevel * 30)} color="red"></LineChart>
-<LineChart start={start} data={o2Saturation.slice(start , start + zoomLevel * 30)} color="blue"></LineChart>
-<LineChart start={start} data={data3.slice(start , start + zoomLevel * 30)} color="orange"></LineChart></div>
+    <LineChart start={start} data={data[0].slice(start , start + zoomLevel * 30)} color="red"></LineChart>
+<LineChart start={start} data={data[1].slice(start , start + zoomLevel * 30)} color="blue"></LineChart>
+<LineChart start={start} data={data[2].slice(start , start + zoomLevel * 30)} color="orange"></LineChart></div>
   }else{
-    charts = <div key={start + zoomLevel}><MixedChart start={start} data={[eeg.slice(start , start + zoomLevel * 30) , o2Saturation.slice(start , start + zoomLevel * 30) , data3.slice(start , start + zoomLevel * 30)] } color="orange"></MixedChart></div>
+    charts = <div key={start + zoomLevel}><MixedChart start={start} data={[data[0].slice(start , start + zoomLevel * 30) , data[1].slice(start , start + zoomLevel * 30) , data[2].slice(start , start + zoomLevel * 30)] } color="orange"></MixedChart></div>
   }
 
   return (
